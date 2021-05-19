@@ -2,13 +2,17 @@
  * @Author: clingxin
  * @Date: 2021-05-19 07:28:54
  * @LastEditors: clingxin
- * @LastEditTime: 2021-05-19 07:59:58
+ * @LastEditTime: 2021-05-19 08:38:42
  * @FilePath: /flutter_object_detection/lib/main.dart
  */
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_object_detection/pages/splash_page.dart';
 
-void main() {
+List<CameraDescription> cameras;
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  cameras = await availableCameras();
   runApp(MyApp());
 }
 
