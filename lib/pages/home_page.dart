@@ -2,7 +2,7 @@
  * @Author: clingxin
  * @Date: 2021-05-19 08:27:14
  * @LastEditors: clingxin
- * @LastEditTime: 2021-05-19 09:59:15
+ * @LastEditTime: 2021-05-19 11:30:28
  * @FilePath: /flutter_object_detection/lib/pages/home_page.dart
  */
 import 'package:camera/camera.dart';
@@ -23,8 +23,8 @@ class _HomePageState extends State<HomePage> {
 
   loadModel() async {
     await Tflite.loadModel(
-        model: "mobilenet_v1_1.0_224.tflite",
-        labels: "mobilenet_v1_1.0_224.txt");
+        model: "assets/models/mobilenet_v1_1.0_224.tflite",
+        labels: "assets/models/mobilenet_v1_1.0_224.txt");
   }
 
   void initCamera() {
@@ -39,10 +39,40 @@ class _HomePageState extends State<HomePage> {
                 {
                   isBusy = true,
                   imgCamera = image,
+                  runModelOnStreamFrames(),
                 }
             });
       });
     });
+  }
+
+  runModelOnStreamFrames() async {
+    if (imgCamera != null) {
+      var recognitions = await Tflite.runModelOnFrame(
+        bytesList: imgCamera.planes.map((plane) {
+          return plane.bytes;
+        }).toList(),
+        imageHeight: imgCamera.height,
+        imageWidth: imgCamera.width,
+        imageMean: 127.5,
+        imageStd: 127.5,
+        rotation: 90,
+        numResults: 2,
+        threshold: 0.1,
+        asynch: true,
+      );
+      result = "";
+      recognitions.forEach((response) {
+        result += response["label"] +
+            "   " +
+            (response["confidence"] as double).toStringAsFixed(2) +
+            "\n\n";
+      });
+      setState(() {
+        result;
+      });
+      isBusy = false;
+    }
   }
 
   @override
@@ -91,7 +121,23 @@ class _HomePageState extends State<HomePage> {
                       ),
               ),
             ),
-          )
+          ),
+          Center(
+            child: Container(
+              margin: EdgeInsets.only(top: 55),
+              child: SingleChildScrollView(
+                child: Text(
+                  result,
+                  style: TextStyle(
+                    backgroundColor: Colors.black87,
+                    fontSize: 30,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
