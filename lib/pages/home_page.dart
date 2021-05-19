@@ -2,12 +2,13 @@
  * @Author: clingxin
  * @Date: 2021-05-19 08:27:14
  * @LastEditors: clingxin
- * @LastEditTime: 2021-05-19 09:24:50
+ * @LastEditTime: 2021-05-19 09:59:15
  * @FilePath: /flutter_object_detection/lib/pages/home_page.dart
  */
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_object_detection/main.dart';
+import 'package:tflite/tflite.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -19,6 +20,12 @@ class _HomePageState extends State<HomePage> {
   bool isBusy = false;
   CameraImage imgCamera;
   String result = "";
+
+  loadModel() async {
+    await Tflite.loadModel(
+        model: "mobilenet_v1_1.0_224.tflite",
+        labels: "mobilenet_v1_1.0_224.txt");
+  }
 
   void initCamera() {
     cameraController = CameraController(cameras[0], ResolutionPreset.max);
@@ -39,8 +46,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    loadModel();
+  }
+
+  @override
   void dispose() {
     cameraController?.dispose();
+    Tflite.close();
     super.dispose();
   }
 
